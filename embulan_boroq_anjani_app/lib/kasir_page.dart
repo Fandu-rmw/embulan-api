@@ -20,7 +20,8 @@ class _KasirPageState extends State<KasirPage> {
   String? _qrisImage; // Variabel untuk menyimpan path/url QRIS toko[cite: 6]
   Timer? _timer;
 
-  final String baseUrl = "https://available-rectified-usual.ngrok-free.dev/api";
+  
+  final String baseUrl = "https://embulan-api.cleverapps.io/api";
 
   @override
   void initState() {

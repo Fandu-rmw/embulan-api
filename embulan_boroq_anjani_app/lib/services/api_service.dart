@@ -2,14 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // URL Ngrok untuk koneksi Flutter Web dan Mobile
-  static const String baseUrl = 'https://available-rectified-usual.ngrok-free.dev/api'; 
+  // URL Clever Cloud untuk koneksi Flutter Web dan Mobile
+  static const String baseUrl = 'https://embulan-api.cleverapps.io/api'; 
 
-  // Header standar untuk komunikasi ke Laravel via Ngrok dengan anti-cache
+  // Header standar untuk komunikasi ke Laravel
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
     'Cache-Control': 'no-cache, no-store, must-revalidate',
     'Pragma': 'no-cache',
     'Expires': '0',

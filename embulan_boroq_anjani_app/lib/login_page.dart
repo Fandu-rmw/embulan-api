@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   
   bool _obscurePassword = true;
   bool _isLoading = false;
-  final String baseUrl = "https://available-rectified-usual.ngrok-free.dev/api";
+  final String baseUrl = "https://embulan-api.cleverapps.io/api";
 
   // Inisialisasi Google Sign In
   final GoogleSignIn _googleSignIn = GoogleSignIn(

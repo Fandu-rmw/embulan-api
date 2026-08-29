@@ -15,7 +15,7 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  final String baseUrl = "https://available-rectified-usual.ngrok-free.dev/api";
+  final String baseUrl = "https://embulan-api.cleverapps.io/api";
   List transaksiList = [];
   bool isLoading = true;
   int totalPendapatan = 0;

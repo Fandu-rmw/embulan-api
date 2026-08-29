@@ -19,7 +19,7 @@ class AdminPage extends StatefulWidget {
 }
 
 class _AdminPageState extends State<AdminPage> {
-  final String baseUrl = "https://available-rectified-usual.ngrok-free.dev/api";
+  final String baseUrl = "https://embulan-api.cleverapps.io/api";
   List menus = [];
   bool isLoading = true;
   final ImagePicker _picker = ImagePicker();
@@ -237,8 +237,8 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   void _showMasterQrDialog() {
-    String masterUrl = "https://available-rectified-usual.ngrok-free.dev/?meja=01";
-    final String qrImageUrl = "https://quickchart.io/qr?text=${Uri.encodeComponent(masterUrl)}&size=300&ecLevel=H";
+  String masterUrl = "https://embulan-api.cleverapps.io/?meja=01";
+  final String qrImageUrl = "https://quickchart.io/qr?text=${Uri.encodeComponent(masterUrl)}&size=300&ecLevel=H";
 
     showDialog(
       context: context,

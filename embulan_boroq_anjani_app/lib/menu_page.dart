@@ -23,8 +23,8 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-  final String baseUrl = "https://available-rectified-usual.ngrok-free.dev/api";
-  final String baseStorageUrl = "https://available-rectified-usual.ngrok-free.dev/storage/";
+  final String baseUrl = "https://embulan-api.cleverapps.io/api";
+  final String baseStorageUrl = "https://embulan-api.cleverapps.io/storage/";
 
   List allMenus = [];
   List filteredMenus = [];

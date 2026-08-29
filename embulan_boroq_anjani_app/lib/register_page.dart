@@ -21,9 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // PERBAIKAN: Base URL dipotong sampai /api saja. 
-  // Kata "/register" dihapus dari sini agar tidak terjadi rute ganda (/register/register) saat dipanggil di bawah.
-  final String baseUrl = "https://available-rectified-usual.ngrok-free.dev/api";
+final String baseUrl = "https://embulan-api.cleverapps.io/api";
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
