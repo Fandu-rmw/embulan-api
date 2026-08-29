@@ -102,7 +102,7 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  // Dialog untuk unggah foto QRIS toko[cite: 9]
+  // Dialog untuk unggah foto QRIS toko
   void _showUploadQrisDialog() {
     XFile? pickedQrisFile;
     Uint8List? webQrisBytes;
@@ -237,8 +237,8 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   void _showMasterQrDialog() {
-  String masterUrl = "https://embulan-api.cleverapps.io/?meja=01";
-  final String qrImageUrl = "https://quickchart.io/qr?text=${Uri.encodeComponent(masterUrl)}&size=300&ecLevel=H";
+    String masterUrl = "https://embulan-api.cleverapps.io/?meja=01";
+    final String qrImageUrl = "https://quickchart.io/qr?text=${Uri.encodeComponent(masterUrl)}&size=300&ecLevel=H";
 
     showDialog(
       context: context,
@@ -285,7 +285,6 @@ class _AdminPageState extends State<AdminPage> {
             ),
             onPressed: () {
               if (kIsWeb) {
-                // Penanganan aman untuk web tanpa import dart:html statis
                 _showSnackBar("Silakan klik kanan / tahan gambar QR untuk menyimpan.", Colors.orange);
               } else {
                 _showSnackBar("Fitur unduh QR dioptimalkan untuk versi Web.", Colors.orange);
@@ -816,25 +815,33 @@ class _AdminPageState extends State<AdminPage> {
         backgroundColor: Colors.white,
         elevation: 0.5,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code, color: Colors.black87),
-            onPressed: _showUploadQrisDialog,
-            tooltip: 'Atur Foto QRIS Toko',
-          ),
-          IconButton(
-            icon: const Icon(Icons.qr_code_2, color: Colors.black87),
-            onPressed: _showMasterQrDialog,
-            tooltip: 'Lihat Master QR Code',
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.black87),
-            onPressed: fetchData,
-            tooltip: 'Muat Ulang Data',
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.red),
-            onPressed: _handleLogout,
-            tooltip: 'Keluar Akun',
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.qr_code, color: Colors.black87),
+                  onPressed: _showUploadQrisDialog,
+                  tooltip: 'Atur Foto QRIS Toko',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.qr_code_2, color: Colors.black87),
+                  onPressed: _showMasterQrDialog,
+                  tooltip: 'Lihat Master QR Code',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.black87),
+                  onPressed: fetchData,
+                  tooltip: 'Muat Ulang Data',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.logout_rounded, color: Colors.red),
+                  onPressed: _handleLogout,
+                  tooltip: 'Keluar Akun',
+                ),
+              ],
+            ),
           ),
         ],
       ),
