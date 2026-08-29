@@ -6,6 +6,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gal/gal.dart';
+import 'package:path_provider/path_provider.dart';
 import 'login_page.dart';
 
 class AdminPage extends StatefulWidget {
@@ -283,11 +285,44 @@ class _AdminPageState extends State<AdminPage> {
               "Unduh QR",
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
-            onPressed: () {
+            onPressed: () async {
               if (kIsWeb) {
                 _showSnackBar("Silakan klik kanan / tahan gambar QR untuk menyimpan.", Colors.orange);
               } else {
-                _showSnackBar("Fitur unduh QR dioptimalkan untuk versi Web.", Colors.orange);
+                try {
+                  _showSnackBar("Mengunduh QR Code...", Colors.blue);
+
+                  // 1. Cek & minta izin galeri
+                  bool hasAccess = await Gal.hasAccess();
+                  if (!hasAccess) {
+                    hasAccess = await Gal.requestAccess();
+                    if (!hasAccess) {
+                      _showSnackBar("Izin galeri ditolak", Colors.red);
+                      return;
+                    }
+                  }
+
+                  // 2. Ambil gambar dari server
+                  final response = await http.get(Uri.parse(qrImageUrl));
+                  if (response.statusCode == 200) {
+                    final bytes = response.bodyBytes;
+
+                    // 3. Simpan ke direktori sementara HP
+                    final tempDir = await getTemporaryDirectory();
+                    final file = File('${tempDir.path}/master_qr_kolam.png');
+                    await file.writeAsBytes(bytes);
+
+                    // 4. Masukkan ke Galeri HP
+                    await Gal.putImage(file.path);
+
+                    if (!mounted) return;
+                    _showSnackBar("QR Code berhasil disimpan ke Galeri!", Colors.green);
+                  } else {
+                    _showSnackBar("Gagal mengunduh gambar QR", Colors.red);
+                  }
+                } catch (e) {
+                  _showSnackBar("Terjadi kesalahan: $e", Colors.red);
+                }
               }
             },
           ),
