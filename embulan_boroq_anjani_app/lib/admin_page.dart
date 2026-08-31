@@ -292,7 +292,6 @@ class _AdminPageState extends State<AdminPage> {
                 try {
                   _showSnackBar("Mengunduh QR Code...", Colors.blue);
 
-                  // 1. Cek & minta izin galeri
                   bool hasAccess = await Gal.hasAccess();
                   if (!hasAccess) {
                     hasAccess = await Gal.requestAccess();
@@ -302,17 +301,14 @@ class _AdminPageState extends State<AdminPage> {
                     }
                   }
 
-                  // 2. Ambil gambar dari server
                   final response = await http.get(Uri.parse(qrImageUrl));
                   if (response.statusCode == 200) {
                     final bytes = response.bodyBytes;
 
-                    // 3. Simpan ke direktori sementara HP
                     final tempDir = await getTemporaryDirectory();
                     final file = File('${tempDir.path}/master_qr_kolam.png');
                     await file.writeAsBytes(bytes);
 
-                    // 4. Masukkan ke Galeri HP
                     await Gal.putImage(file.path);
 
                     if (!mounted) return;
@@ -420,7 +416,7 @@ class _AdminPageState extends State<AdminPage> {
     }
   }
 
-  Future _editMenu(dynamic id, String namaBaru, String hargaBaru) async {
+  Future _editMenu(dynamic id, String namaBaru, String hargaBaru, String kategoriBaru) async {
     String cleanToken = widget.token.trim().replaceAll("Bearer ", "");
     try {
       final res = await http.put(
@@ -431,7 +427,11 @@ class _AdminPageState extends State<AdminPage> {
           "Authorization": "Bearer $cleanToken",
           "ngrok-skip-browser-warning": "true",
         },
-        body: json.encode({"nama_menu": namaBaru, "harga": hargaBaru}),
+        body: json.encode({
+          "nama_menu": namaBaru,
+          "harga": hargaBaru,
+          "kategori": kategoriBaru,
+        }),
       );
 
       if (res.statusCode == 200) {
@@ -472,6 +472,12 @@ class _AdminPageState extends State<AdminPage> {
     TextEditingController editHargaCtrl = TextEditingController(
       text: menu['harga']?.toString(),
     );
+
+    String initialKategori = menu['kategori']?.toString() ?? "Makanan";
+    if (initialKategori != "Makanan" && initialKategori != "Minuman") {
+      initialKategori = "Makanan";
+    }
+    String editKategori = initialKategori;
     bool isUpdating = false;
 
     showDialog(
@@ -502,6 +508,24 @@ class _AdminPageState extends State<AdminPage> {
                     prefixIcon: const Icon(Icons.attach_money),
                   ),
                   keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: editKategori,
+                  decoration: InputDecoration(
+                    labelText: "Kategori Menu",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    prefixIcon: const Icon(Icons.category),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: "Makanan", child: Text("Makanan")),
+                    DropdownMenuItem(value: "Minuman", child: Text("Minuman")),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setS(() => editKategori = val);
+                    }
+                  },
                 ),
               ],
             ),
@@ -540,6 +564,7 @@ class _AdminPageState extends State<AdminPage> {
                         menu['id'],
                         editNamaCtrl.text.trim(),
                         editHargaCtrl.text.trim(),
+                        editKategori,
                       );
 
                       if (!mounted) return;
@@ -567,6 +592,7 @@ class _AdminPageState extends State<AdminPage> {
   void _showAddDialog() {
     TextEditingController n = TextEditingController();
     TextEditingController h = TextEditingController();
+    String selectedKategori = "Makanan";
     XFile? pickedXFile;
     Uint8List? webImageBytes;
     File? imageFile;
@@ -600,6 +626,24 @@ class _AdminPageState extends State<AdminPage> {
                     prefixIcon: const Icon(Icons.payments),
                   ),
                   keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedKategori,
+                  decoration: InputDecoration(
+                    labelText: "Kategori Menu",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    prefixIcon: const Icon(Icons.category),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: "Makanan", child: Text("Makanan")),
+                    DropdownMenuItem(value: "Minuman", child: Text("Minuman")),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setS(() => selectedKategori = val);
+                    }
+                  },
                 ),
                 const SizedBox(height: 15),
                 GestureDetector(
@@ -702,7 +746,7 @@ class _AdminPageState extends State<AdminPage> {
                         request.fields['nama_menu'] = n.text.trim();
                         request.fields['harga'] = h.text.trim();
                         request.fields['umkm_name'] = namaUmkm;
-                        request.fields['kategori'] = "Makanan";
+                        request.fields['kategori'] = selectedKategori;
 
                         if (kIsWeb) {
                           request.files.add(
