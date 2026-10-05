@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart'; 
-import 'package:google_sign_in/google_sign_in.dart'; 
 import 'register_page.dart'; 
 import 'main_navigation.dart'; 
 
@@ -10,10 +9,10 @@ class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   
@@ -21,23 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   final String baseUrl = "https://embulan-api.cleverapps.io/api";
 
-  // Inisialisasi Google Sign In
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: '179787623484-9tvq4vvc31djkjfbkp07gklmqv0vobpd.apps.googleusercontent.com', 
-    scopes: ['email', 'profile'],
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-      if (account != null) {
-        _prosesVerifikasiBackend(account);
-      }
-    });
-  }
-
-  Future<void> _handleLogin() async {
+  Future _handleLogin() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
@@ -114,92 +97,6 @@ class _LoginPageState extends State<LoginPage> {
       _showSnackBar("Gagal terhubung ke server Laravel: $e", Colors.red);
     } finally {
       if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  // FUNGSI MEMPROSES AKUN GOOGLE KE LARAVEL
-  Future<void> _prosesVerifikasiBackend(GoogleSignInAccount googleUser) async {
-    setState(() => _isLoading = true);
-
-    try {
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      final response = await http.post(
-        Uri.parse("$baseUrl/google-login"),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: jsonEncode({
-          "email": googleUser.email,
-          "name": googleUser.displayName ?? '',
-          "google_id": googleUser.id,
-          "id_token": googleAuth.idToken ?? '',
-        }),
-      ).timeout(const Duration(seconds: 15));
-
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        String token = '';
-        if (data != null) {
-          token = data['access_token'] ?? data['token'] ?? (data['data'] != null ? data['data']['token'] : '') ?? '';
-        }
-
-        String storeName = googleUser.displayName ?? "Toko Batur";
-
-        try {
-          if (data != null) {
-            if (data['user'] != null && data['user']['store_name'] != null) {
-              storeName = data['user']['store_name'].toString();
-            } else if (data['store_name'] != null) {
-              storeName = data['store_name'].toString();
-            }
-          }
-        } catch (_) {}
-
-        if (token.isEmpty) {
-          _showSnackBar("Login Google gagal: Token dari server tidak ditemukan.", Colors.red);
-          return;
-        }
-
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('token', token.trim());
-        await prefs.setString('storeName', storeName.trim());
-
-        if (!mounted) return;
-
-        _showSnackBar("Login Google Berhasil! Selamat Datang.", Colors.green);
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainNavigation(
-              token: token.trim(),
-              name: storeName.trim(),
-            ),
-          ),
-        );
-      } else {
-        _showSnackBar(data['message'] ?? "Gagal verifikasi Google ke server.", Colors.red);
-      }
-    } catch (e) {
-      _showSnackBar("Gagal login dengan Google: $e", Colors.red);
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _handleGoogleLogin() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser != null) {
-        _prosesVerifikasiBackend(googleUser);
-      }
-    } catch (e) {
-      _showSnackBar("Gagal login dengan Google: $e", Colors.red);
     }
   }
 
@@ -333,56 +230,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      
-                      // PEMBATAS
-                      Row(
-                        children: [
-                          Expanded(child: Divider(color: Colors.grey.shade300)),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text("ATAU", style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                          ),
-                          Expanded(child: Divider(color: Colors.grey.shade300)),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // TOMBOL GOOGLE
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.grey.shade300),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          onPressed: _isLoading ? null : _handleGoogleLogin,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.network(
-                                'https://api.iconify.design/flat-color-icons:google.svg',
-                                height: 22,
-                                width: 22,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.g_mobiledata_rounded, size: 30, color: Colors.red),
-                              ),
-                              const SizedBox(width: 10),
-                              const Text(
-                                "Masuk dengan Google",
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 20),
-
                       Center(
                         child: GestureDetector(
                           onTap: () {
